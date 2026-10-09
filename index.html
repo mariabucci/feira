@@ -1,0 +1,293 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minicarrinho de Compras</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 30px auto;
+      padding: 20px;
+      background: #ebfeff;
+    }
+
+    h2 {
+      text-align: center;
+      font-family: georgia, serif;
+    }
+
+    .produtos {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      border: 1px solid #ccc;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+      flex: 1;
+    }
+
+    .card button {
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .card button:hover {
+      background: #218838;
+    }
+
+    .carrinho-box {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .remover {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 5px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .total-box {
+      font-size: 18px;
+      font-weight: bold;
+      margin-top: 15px;
+      text-align: right;
+    }
+
+    #esvaziar {
+      background: #343a40;
+      color: white;
+      border: none;
+      padding: 10px 14px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    #mensagem {
+      color: #555;
+      text-align: center;
+    }
+
+    @media (max-width: 500px) {
+      .produtos {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <h2>Feira de Frutas</h2>
+
+  <div class="produtos">
+
+    <div class="card">
+      <h3> Maçã</h3>
+      <p>R$ 3,50</p>
+      <button class="btn-add"
+        data-nome="Maçã"
+        data-preco="3.50">
+        Adicionar
+      </button>
+    </div>
+
+    <div class="card">
+      <h3>Morango</h3>
+      <p>R$ 5,00</p>
+      <button class="btn-add"
+        data-nome="Morango"
+        data-preco="5.00">
+        Adicionar
+      </button> 
+    </div>
+    
+    <div class="card">
+      <h3> Banana</h3>
+      <p>R$ 2,00</p>
+      <button class="btn-add"
+        data-nome="Banana"
+        data-preco="2.00">
+        Adicionar
+      </button>
+    </div>
+
+    <div class="card">
+      <h3>Abacate</h3>
+      <p>R$ 6,00</p>
+      <button class="btn-add"
+        data-nome="Abacate"
+        data-preco="6.00">
+        Adicionar
+      </button>
+    </div>
+
+    <div class="card">
+      <h3>Melancia</h3>
+      <p>R$9,00</p>
+      <button class="btn-add"
+        data-nome="Melancia"
+        data-preco="9.00">
+        Adicionar
+      </button>
+    </div>
+
+  </div>
+
+  <div class="carrinho-box">
+    <h3>🛒 Seu Carrinho</h3>
+
+    <p id="mensagem">Seu carrinho está vazio.</p>
+
+    <ul id="lista-carrinho"></ul>
+
+    <div class="total-box">
+      Total: R$ <span id="valor-total">0.00</span>
+    </div>
+
+    <button id="esvaziar">Esvaziar Carrinho</button>
+  </div>
+
+  <script>
+
+    const botoes = document.querySelectorAll(".btn-add");
+    const listaCarrinho = document.querySelector("#lista-carrinho");
+    const valorTotalEl = document.querySelector("#valor-total");
+    const botaoEsvaziar = document.querySelector("#esvaziar");
+    const mensagem = document.querySelector("#mensagem");
+
+
+    let total = 0;
+    const itens = {};
+
+
+    function atualizarTotal() {
+      valorTotalEl.textContent = total.toFixed(2);
+    }
+
+
+    function atualizarMensagem() {
+      mensagem.textContent =
+        listaCarrinho.children.length === 0
+          ? "Seu carrinho está vazio."
+          : "";
+    }
+
+    botoes.forEach(botao => {
+      botao.addEventListener("click", () => {
+
+        const nome = botao.dataset.nome;
+        const preco = parseFloat(botao.dataset.preco);
+
+       
+        if (itens[nome]) {
+          itens[nome].quantidade++;
+        } else {
+          const li = document.createElement("li");
+
+          const descricao = document.createElement("span");
+          const remover = document.createElement("button");
+
+          descricao.className = "descricao";
+          remover.className = "remover";
+          remover.textContent = "Remover";
+
+          li.appendChild(descricao);
+          li.appendChild(remover);
+          listaCarrinho.appendChild(li);
+
+          itens[nome] = {
+            preco: preco,
+            quantidade: 1,
+            elemento: li
+          };
+
+          remover.addEventListener("click", () => {
+            const item = itens[nome];
+
+            total -= item.preco;
+            item.quantidade--;
+
+            if (item.quantidade <= 0) {
+              item.elemento.remove();
+              delete itens[nome];
+            } else {
+              atualizarDescricao(nome);
+            }
+
+            atualizarTotal();
+            atualizarMensagem();
+          });
+        }
+
+        // Somar o preço ao total
+        total += preco;
+
+        atualizarDescricao(nome);
+        atualizarTotal();
+        atualizarMensagem();
+      });
+    });
+
+    function atualizarDescricao(nome) {
+      const item = itens[nome];
+
+      if (!item) return;
+
+      const descricao = item.elemento.querySelector(".descricao");
+
+      const subtotal = item.preco * item.quantidade;
+
+      descricao.textContent =
+        `${nome} x${item.quantidade} — R$ ${subtotal.toFixed(2)}`;
+    }
+
+  
+    botaoEsvaziar.addEventListener("click", () => {
+      listaCarrinho.innerHTML = "";
+
+      Object.keys(itens).forEach(nome => {
+        delete itens[nome];
+      });
+
+      total = 0;
+
+      atualizarTotal();
+      atualizarMensagem();
+    });
+
+  </script>
+
+</body>
+</html>
